@@ -68,3 +68,10 @@
     font-size: 13px;
   }
 }
+
+.tooltip {
+  padding: 5px;
+  background: gainsboro;
+  border-radius: 8px;
+}
+

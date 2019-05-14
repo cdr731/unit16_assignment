@@ -1,95 +1,5 @@
-//--------FUNCTION DEFINITIONS-------------
-
-// initial default axes
-var chosenXAxis = "poverty";
-var chosenYAxis = "obesity";
-
-// function for updating scale when axis label is clicked
-function axisScale(acsData, chosenAxis, whichAxis) {
-  switch(whichAxis) {
-    case "x_axis":
-      var range1 = 0;
-      var range2 = splotWidth;
-      break;  
-    case "y_axis":
-      var range1 = splotHeight;
-      var range2 = 0;
-      break;        
-  }
-  var linearScale = d3.scaleLinear()
-    .domain([d3.min(acsData, d => d[chosenAxis]) * 0.9,
-      d3.max(acsData, d => d[chosenAxis]) * 1.1])
-    .range([range1, range2]); 
-  return linearScale;
-}
-
-// function for updating axis variable when axis label is clicked
-function renderAxes(newScale, theAxis, whichAxis) {
-  switch(whichAxis) {
-    case "x_axis":
-      var selectAxis = d3.axisBottom(newScale);
-      break;
-    case "y_axis":  
-      var selectAxis = d3.axisLeft(newScale);
-      break;
-  }
-  theAxis.transition()
-    .duration(1000)
-    .call(selectAxis);      
-  return theAxis;
-}
-
-// function for updating circles group and transitioning
-function renderCircles(circlesGroup, newScale, chosenAxis, cpos) {
-  circlesGroup.transition()
-    .duration(1000)
-    .attr(cpos, d => newScale(d[chosenAxis]));
-  return circlesGroup;
-}
-
-// function for updating tooltip
-function updateToolTip(chosenXAxis, chosenYAxis, circlesGroup) {
-  switch(chosenXAxis) {
-    case "poverty":
-      var xlabel = "Poverty (%):";
-      break;
-    case "age":
-      var xlabel = "Age (Years):";
-      break;
-    case "income":
-      var xlabel = "Income ($):";
-      break;
-  }
-  switch(chosenYAxis) {
-    case "obesity":
-      var ylabel = "Obesity (%):";
-      break;
-    case "smokes":
-      var ylabel = "Smokes (%):";
-      break;
-    case "healthcare":
-      var ylabel = "Healthcare (%):";
-      break;
-  }
-  var toolTip = d3.tip()
-    .attr("class", "tooltip")
-    .offset([80, -60])
-    .html(function(d) {
-      return (`${d.state}<br>${xlabel} ${d[chosenXAxis]}
-        <br>${ylabel} ${d[chosenYAxis]}`);
-    });
-  circlesGroup.call(toolTip);
-  circlesGroup.on("mouseover", function(data) {
-    toolTip.show(data);
-  })
-    // onmouseout event
-    .on("mouseout", function(data, index) {
-      toolTip.hide(data);  
-    });
-  return circlesGroup;
-}
-
-//--------END OF FUNCTIONS, MAIN FUNCTION-------------
+// Unit 16 Assignment - Data Journalism and D3
+// by Christopher Reutz
 
 function makeResponsive() {
   
@@ -105,10 +15,10 @@ function makeResponsive() {
 
   // margins
   var margin = {
-    top: 20,
-    right: 20,
+    top: 100,
+    right: 150,
     bottom: 100,
-    left: 100
+    left: 50
   };
 
   // scatter plot area = SVG area minus margins
@@ -125,8 +35,93 @@ function makeResponsive() {
   var chartGroup = svg.append("g")
     .attr("transform", `translate(${margin.left}, ${margin.top})`);
   
+  // function for updating scale when axis label is clicked
+  function axisScale(acsData, chosenAxis, whichAxis) {
+    switch(whichAxis) {
+      case "x_axis":
+        var range1 = 0;
+        var range2 = splotWidth;
+        break;  
+      case "y_axis":
+        var range1 = splotHeight;
+        var range2 = 0;
+        break;        
+    }
+    var linearScale = d3.scaleLinear()
+      .domain([d3.min(acsData, d => d[chosenAxis]) * 0.95,
+        d3.max(acsData, d => d[chosenAxis]) * 1.05])
+      .range([range1, range2]);
+    return linearScale;
+  }
+
+  // function for updating axis variable when axis label is clicked
+  function renderAxes(newScale, theAxis, whichAxis) {
+    switch(whichAxis) {
+      case "x_axis":
+        var selectAxis = d3.axisBottom(newScale);
+        break;
+      case "y_axis":  
+        var selectAxis = d3.axisLeft(newScale);
+        break;
+    }
+    theAxis.transition()
+      .duration(1000)
+      .call(selectAxis);      
+    return theAxis;
+  }
+
+  // function for updating circles group and transitioning
+  function renderCircles(circlesGroup, newScale, chosenAxis, cpos) {
+    circlesGroup.transition()
+      .duration(1000)
+      .attr(cpos, d => newScale(d[chosenAxis]));
+    return circlesGroup;
+  }
+
+  // function for updating tooltip
+  function updateToolTip(chosenXAxis, chosenYAxis, circlesGroup) {
+    switch(chosenXAxis) {
+      case "poverty":
+        var xlabel = "Poverty (%):";
+        break;
+      case "age":
+        var xlabel = "Age (Years):";
+        break;
+      case "income":
+        var xlabel = "Income ($):";
+        break;
+    }
+    switch(chosenYAxis) {
+      case "obesity":
+        var ylabel = "Obesity (%):";
+        break;
+      case "smokes":
+        var ylabel = "Smokes (%):";
+        break;
+      case "healthcare":
+        var ylabel = "Healthcare (%):";
+        break;
+    }
+    var toolTip = d3.tip()
+      .attr("class", "tooltip")
+      .offset([80, -60])
+      .html(function(d) {
+        return (`${d.state}<br>${xlabel} ${d[chosenXAxis]}
+          <br>${ylabel} ${d[chosenYAxis]}`);
+      });
+    circlesGroup.call(toolTip);
+    circlesGroup.on("mouseover", function(data) {
+      toolTip.show(data);
+    })
+      // onmouseout event
+      .on("mouseout", function(data, index) {
+        toolTip.hide(data);  
+      });
+    return circlesGroup;
+  }
+
   // data retrieval
-  d3.csv("/assets/data/data.csv").then(function(err, acsData) {
+  d3.csv("assets/data/data.csv", function(err, acsData) {
     console.log(acsData);
     if (err) throw err;
     
@@ -162,7 +157,7 @@ function makeResponsive() {
       .attr("cx", d => xLinearScale(d[chosenXAxis]))
       .attr("cy", d => yLinearScale(d[chosenYAxis]))
       .attr("r", 10)
-      .attr("fill", "skyblue")
+      .attr("fill", "steelblue")
       .attr("opacity", ".5");
   
     // create x-axis group labels
@@ -189,7 +184,7 @@ function makeResponsive() {
 
     // create y-axis group labels
     var ylabelsGroup = chartGroup.append("g")
-      .attr("tranform", "rotate(-90)")
+      .attr("tranform", "rotate(-90)");	  
     var obesityLabel = ylabelsGroup.append("text")
       .attr("x", -(splotHeight / 2))
       .attr("y", -margin.left)
@@ -275,6 +270,10 @@ function makeResponsive() {
     });
   });
 } // end of function
+
+// initial default axes
+var chosenXAxis = "poverty";
+var chosenYAxis = "obesity";
 
 makeResponsive();
 
