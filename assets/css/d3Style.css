@@ -42,13 +42,13 @@
 
 .d3-tip {
   padding: 6px;
-  font-size: 12px;
+  font-size: 14px;
   line-height: 1;
   line-height: 1.5em;
-  color: #fff;
+  color: white;
   text-align: center;
   text-transform: capitalize;
-  background: rgba(0, 0, 0, 0.8);
+  background: slategray;
   border-radius: 4px;
 }
 
@@ -75,3 +75,20 @@
   border-radius: 5px;
 }
 
+.d3-tip:after {
+  box-sizing: border-box;
+  display: inline;
+  font-size: 10px;
+  width: 100%;
+  line-height: 1;
+  color: slategray;
+  content: "\25BC";
+  position: absolute;
+  text-align: center;
+}
+
+.d3-tip.n:after {
+  margin: -2px 0 0 0;
+  top: 100%;
+  left: 0;
+}

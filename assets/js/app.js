@@ -131,7 +131,8 @@ function makeResponsive() {
         break;
     }
     var toolTip = d3.tip()
-      .attr("class", "tooltip")
+      //.attr("class", "tooltip")
+      .attr("class", "d3-tip")
       .offset([-8, 0])
       .html(function(d) {
         return (`<strong>${d.state}</strong>
