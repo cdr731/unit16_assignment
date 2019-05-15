@@ -18,12 +18,12 @@ function makeResponsive() {
     top: 100,
     right: 150,
     bottom: 100,
-    left: 50
+    left: 100
   };
 
   // scatter plot area = SVG area minus margins
-  var splotHeight = svgHeight - margin.top - margin.bottom;
-  var splotWidth = svgWidth - margin.left - margin.right;
+  var height = svgHeight - margin.top - margin.bottom;
+  var width = svgWidth - margin.left - margin.right;
 
   // create SVG container
   var svg = d3.select("#scatter")
@@ -40,10 +40,10 @@ function makeResponsive() {
     switch(whichAxis) {
       case "x_axis":
         var range1 = 0;
-        var range2 = splotWidth;
+        var range2 = width;
         break;  
       case "y_axis":
-        var range1 = splotHeight;
+        var range1 = height;
         var range2 = 0;
         break;        
     }
@@ -104,9 +104,9 @@ function makeResponsive() {
     }
     var toolTip = d3.tip()
       .attr("class", "tooltip")
-      .offset([80, -60])
+      .offset([-8, 0])
       .html(function(d) {
-        return (`${d.state}<br>${xlabel} ${d[chosenXAxis]}
+        return (`<strong>${d.state}</strong><br>${xlabel} ${d[chosenXAxis]}
           <br>${ylabel} ${d[chosenYAxis]}`);
       });
     circlesGroup.call(toolTip);
@@ -143,12 +143,12 @@ function makeResponsive() {
     // append axes
     var xAxis = chartGroup.append("g")
       .classed("x-axis", true)
-      .attr("transform", `translate(0, ${splotHeight})`)
+      .attr("transform", `translate(0, ${height})`)
       .call(bottomAxis);
     var yAxis = chartGroup.append("g")
       .classed("y-axis", true)
       .call(leftAxis);
-
+    
     // append initial circles
     var circlesGroup = chartGroup.selectAll("circle")
       .data(acsData)
@@ -156,13 +156,13 @@ function makeResponsive() {
       .append("circle")
       .attr("cx", d => xLinearScale(d[chosenXAxis]))
       .attr("cy", d => yLinearScale(d[chosenYAxis]))
-      .attr("r", 10)
+      .attr("r", 14)
       .attr("fill", "steelblue")
-      .attr("opacity", ".5");
+      .attr("opacity", ".65");
   
     // create x-axis group labels
     var xlabelsGroup = chartGroup.append("g")
-      .attr("transform", `translate(${splotWidth / 2}, ${splotHeight + 20})`);
+      .attr("transform", `translate(${width / 2}, ${height + 20})`);
     var povertyLabel = xlabelsGroup.append("text")
       .attr("x", 0)
       .attr("y", 20)
@@ -183,24 +183,29 @@ function makeResponsive() {
       .text("Household Income (Median)");    
 
     // create y-axis group labels
-    var ylabelsGroup = chartGroup.append("g")
-      .attr("tranform", "rotate(-90)");	  
+    var ylabelsGroup = chartGroup.append("g");
     var obesityLabel = ylabelsGroup.append("text")
-      .attr("x", -(splotHeight / 2))
-      .attr("y", -margin.left)
+      .attr("transform", "rotate(-90)")
+      .attr("y", 0 - margin.left)
+      .attr("x", 0 - (height / 2))
       .attr("value", "obesity")
+      .attr("dy", "4em")
       .classed("active", true)
       .text("Obesity (%)");
     var smokesLabel = ylabelsGroup.append("text")
-      .attr("x", -(splotHeight / 2))
-      .attr("y", -margin.left - 20)
+      .attr("transform", "rotate(-90)")
+      .attr("y", 0 - margin.left)
+      .attr("x", 0 - (height / 2))
       .attr("value", "smokes")
+      .attr("dy", "2.5em")
       .classed("inactive", true)
       .text("Smokes (%)");
     var healthcareLabel = ylabelsGroup.append("text")
-      .attr("x", -(splotHeight / 2))
-      .attr("y", -margin.left - 40)
+      .attr("transform", "rotate(-90)")
+      .attr("y", 0 - margin.left)
+      .attr("x", 0 - (height / 2))
       .attr("value", "healthcare")
+      .attr("dy", "1em")
       .classed("inactive", true)
       .text("Lacks Healthcare (%)");
 
