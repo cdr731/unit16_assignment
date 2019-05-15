@@ -48,8 +48,8 @@ function makeResponsive() {
         break;        
     }
     var linearScale = d3.scaleLinear()
-      .domain([d3.min(acsData, d => d[chosenAxis]) * 0.95,
-        d3.max(acsData, d => d[chosenAxis]) * 1.05])
+      .domain([d3.min(acsData, d => d[chosenAxis]) * 0.92,
+        d3.max(acsData, d => d[chosenAxis]) * 1.08])
       .range([range1, range2]);
     return linearScale;
   }
@@ -78,36 +78,65 @@ function makeResponsive() {
     return circlesGroup;
   }
 
+  // function for updating circles group and transitioning
+  function renderTextLabels(textGroup, newScale, chosenAxis, cpos) {
+    textGroup.transition()
+      .duration(1000)
+      .attr(cpos, d => newScale(d[chosenAxis]))
+      .attr("dx", "-0.75em")
+      .attr("dy", "0.25em")
+    return textGroup;
+  }
+  
+  // function for formatting tooltip values
+  function numFrmt(chosenAxis, value) {
+    switch (chosenAxis) {
+      case "poverty":
+      case "obesity":
+      case "smokes":
+      case "healthcare":
+        return d3.format(",.1f")(value) + "%";
+        break;
+      case "age":
+        return d3.format(",.1f")(value) + " yrs.";
+        break;
+      case "income":
+        return "$" + d3.format(",")(value);
+        break;
+    }
+  }
+
   // function for updating tooltip
   function updateToolTip(chosenXAxis, chosenYAxis, circlesGroup) {
     switch(chosenXAxis) {
       case "poverty":
-        var xlabel = "Poverty (%):";
+        var xlabel = "Poverty:";
         break;
       case "age":
-        var xlabel = "Age (Years):";
+        var xlabel = "Age:";
         break;
       case "income":
-        var xlabel = "Income ($):";
+        var xlabel = "Income:";
         break;
     }
     switch(chosenYAxis) {
       case "obesity":
-        var ylabel = "Obesity (%):";
+        var ylabel = "Obesity:";
         break;
       case "smokes":
-        var ylabel = "Smokes (%):";
+        var ylabel = "Smoke:";
         break;
       case "healthcare":
-        var ylabel = "Healthcare (%):";
+        var ylabel = "Lack Healthcare:";
         break;
     }
     var toolTip = d3.tip()
       .attr("class", "tooltip")
       .offset([-8, 0])
       .html(function(d) {
-        return (`<strong>${d.state}</strong><br>${xlabel} ${d[chosenXAxis]}
-          <br>${ylabel} ${d[chosenYAxis]}`);
+        return (`<strong>${d.state}</strong>
+          <br>${xlabel} ${numFrmt(chosenXAxis, d[chosenXAxis])}
+          <br>${ylabel} ${numFrmt(chosenYAxis, d[chosenYAxis])}`);
       });
     circlesGroup.call(toolTip);
     circlesGroup.on("mouseover", function(data) {
@@ -156,9 +185,23 @@ function makeResponsive() {
       .append("circle")
       .attr("cx", d => xLinearScale(d[chosenXAxis]))
       .attr("cy", d => yLinearScale(d[chosenYAxis]))
-      .attr("r", 14)
+      .attr("r", 12)
       .attr("fill", "steelblue")
       .attr("opacity", ".65");
+    
+    // append initial text labels
+    var textGroup = chartGroup.append("g").selectAll("text")
+      .data(acsData)
+      .enter()
+      .append("text")
+      .text(d => d.abbr)
+      .attr("x", d => xLinearScale(d[chosenXAxis]))
+      .attr("y", d => yLinearScale(d[chosenYAxis]))
+      .attr("dx", "-0.75em")
+      .attr("dy", "0.25em")
+      .attr("font-size", "12px")
+      .attr("font-weight", "bold")
+      .attr("fill", "white");
   
     // create x-axis group labels
     var xlabelsGroup = chartGroup.append("g")
@@ -174,13 +217,13 @@ function makeResponsive() {
       .attr("y", 40)
       .attr("value", "age")
       .classed("inactive", true)
-      .text("Age (Median)");   
+      .text("Median Age (Years)");   
     var incomeLabel = xlabelsGroup.append("text")
       .attr("x", 0)
       .attr("y", 60)
       .attr("value", "income")
       .classed("inactive", true)
-      .text("Household Income (Median)");    
+      .text("Median Household Income ($)");    
 
     // create y-axis group labels
     var ylabelsGroup = chartGroup.append("g");
@@ -207,7 +250,7 @@ function makeResponsive() {
       .attr("value", "healthcare")
       .attr("dy", "1em")
       .classed("inactive", true)
-      .text("Lacks Healthcare (%)");
+      .text("Lack Healthcare (%)");
 
     // updateToolTip function
     var circlesGroup = updateToolTip(chosenXAxis, chosenYAxis, circlesGroup);
@@ -221,6 +264,7 @@ function makeResponsive() {
         xLinearScale = axisScale(acsData, chosenXAxis, "x_axis");
         xAxis = renderAxes(xLinearScale, xAxis, "x_axis");
         circlesGroup = renderCircles(circlesGroup, xLinearScale, chosenXAxis, "cx");
+        textGroup = renderTextLabels(textGroup, xLinearScale, chosenXAxis, "x");
         circlesGroup = updateToolTip(chosenXAxis, chosenYAxis, circlesGroup);
 
         switch(chosenXAxis) {
@@ -252,6 +296,7 @@ function makeResponsive() {
         yLinearScale = axisScale(acsData, chosenYAxis, "y_axis");
         yAxis = renderAxes(yLinearScale, yAxis, "y_axis");
         circlesGroup = renderCircles(circlesGroup, yLinearScale, chosenYAxis, "cy");
+        textGroup = renderTextLabels(textGroup, yLinearScale, chosenYAxis, "y");
         circlesGroup = updateToolTip(chosenXAxis, chosenYAxis, circlesGroup);
         
         switch(chosenYAxis) {
@@ -284,4 +329,3 @@ makeResponsive();
 
 // window resize event listener
 d3.select(window).on("resize", makeResponsive);
-
